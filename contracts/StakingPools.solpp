@@ -317,8 +317,34 @@ contract StakingPools is Owned {
         );
     }
 
+    /// @dev Not user friendly return structure due to stack depth and abi limitations.
+    /// @dev Possible performance tweaks by adjusting how packedIntegers is traversed.
+    getter getAllPoolInfo() returns (
+        tokenId[] memory stakingTokenIds,
+        tokenId[] memory rewardTokenIds,
+        uint[] memory packedIntegers
+    )
+    {
+        tokenId[] memory _stakingTokenIds = new tokenId[](poolCount);
+        tokenId[] memory _rewardTokenIds = new tokenId[](poolCount);
+        uint[] memory _packedIntegers = new uint[](poolCount*8);
 
+        for (uint i = 0; i < poolCount; i++) {
+            PoolInfo storage pool = pools[i];
+            _stakingTokenIds[i] = pool.stakingTokenId;
+            _rewardTokenIds[i] = pool.rewardTokenId;
+            _packedIntegers[i*8+0] = pool.totalStakingBalance;
+            _packedIntegers[i*8+1] = pool.totalRewardBalance;
+            _packedIntegers[i*8+2] = pool.startBlock;
+            _packedIntegers[i*8+3] = pool.endBlock;
+            _packedIntegers[i*8+4] = pool.latestRewardBlock;
+            _packedIntegers[i*8+5] = pool.rewardPerPeriod;
+            _packedIntegers[i*8+6] = pool.rewardPerToken;
+            _packedIntegers[i*8+7] = pool.paidOut;
+        }
+        return (_stakingTokenIds, _rewardTokenIds, _packedIntegers);
 }
 
+}
 
 
