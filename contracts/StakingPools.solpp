@@ -6,7 +6,8 @@ import "./SafeMathBasic.solpp";
 import "./Owned.solpp";
 
 /// @title StakingPools staking contract for VivaFi.org
-/// @author Wesley W. Erickson
+/// @author (a) Wesley W. Erickson (wes@vite.org)
+/// @author (b) provenMatt (proofofmatt@protonmail.com)
 /// @notice Users deposit Vite native tokens into contract and earn other Vite native tokens over time as a reward, proportional to their deposited stake.
 /// @dev --------------------------------------------------------------------------------------------------------------------
 /// @dev Staking pools distribute a chosen native Vite token as a reward to users staking another
@@ -164,7 +165,7 @@ contract StakingPools is Owned {
             if( pendingAmount > 0 ){
                 /// @dev redundant with safemath pool.currentRewardBalance.sub(pendingAmount) below.
                 require( pendingAmount <= pool.currentRewardBalance );
-                msg.sender.transfer(pool.rewardTokenId, pendingAmount);
+                msg.sender.transfer(pool.rewardTokenId, pendingAmount);		
                 pool.currentRewardBalance = pool.currentRewardBalance.sub(pendingAmount);
                 pool.paidOut = pool.paidOut.add(pendingAmount);
                 emit Claim(msg.sender, PoolId, pendingAmount);
@@ -344,7 +345,7 @@ contract StakingPools is Owned {
             _packedIntegers[i*8+7] = pool.paidOut;
         }
         return (_stakingTokenIds, _rewardTokenIds, _packedIntegers);
-}
+    }
 
 }
 
