@@ -2,11 +2,12 @@
 // Viva Contracts v0.1.0
 
 pragma soliditypp ^0.4.3;
-//
-// SafeMathBasic.solpp
-//
-// for reference see: https://gist.github.com/aerophile/f5bf7d75968f9464ee0d03d71cfb1c8b
-//
+
+/// @title SafeMathBasic 
+/// @author (a) Wesley W. Erickson (wes@vite.org)
+/// @author (b) provenMatt (proofofmatt@protonmail.com)
+/// @notice Adds basic overflow protections for solidity++ contracts.
+/// @dev for reference see: https://gist.github.com/aerophile/f5bf7d75968f9464ee0d03d71cfb1c8b
 library SafeMathBasic {
     function add(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 c = a + b;
