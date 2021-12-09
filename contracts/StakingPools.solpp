@@ -106,8 +106,9 @@ contract StakingPools is Owned {
     // EVENTS
 
     event PoolCreated(uint pid);
-    event Deposit(address addr, uint pid, uint amount);
-    event Withdraw(address addr, uint pid, uint amount);
+    event Deposit(address indexed addr, uint indexed pid, uint amount);
+    event Withdraw(address indexed addr, uint indexed pid, uint amount);
+    event Claim(address indexed addr, uint indexed pid, uint amount);
 
     // GLOBALS
     
@@ -166,6 +167,7 @@ contract StakingPools is Owned {
                 msg.sender.transfer(pool.rewardTokenId, pendingAmount);
                 pool.currentRewardBalance = pool.currentRewardBalance.sub(pendingAmount);
                 pool.paidOut = pool.paidOut.add(pendingAmount);
+                emit Claim(msg.sender, PoolId, pendingAmount);
             }
         }
 
@@ -196,6 +198,7 @@ contract StakingPools is Owned {
             msg.sender.transfer(pool.rewardTokenId, pendingAmount);
             pool.currentRewardBalance = pool.currentRewardBalance.sub(pendingAmount);
             pool.paidOut = pool.paidOut.add(pendingAmount);
+            emit Claim(msg.sender, PoolId, pendingAmount);
         }
 
         // update balances & recompute rewardDebt
