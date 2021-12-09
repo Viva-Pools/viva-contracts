@@ -61,8 +61,8 @@ contract StakingPools is Owned {
 
     /// @notice specifies required delay in seconds before withdrawDust() can be called by owner after pools close.
     /// @dev should be set to multiple days to prevent abuse by owner
-    uint constant adminDelay = 60; // for testing
-    // uint constant adminDelay = 60*60*24*30; // 1 month delay for mainnet seems reasonable.
+    // uint constant adminDelay = 60; // for testing
+    uint constant adminDelay = 60*60*24*30; // 1 month delay for mainnet seems reasonable.
 
     // STRUCTS
 
