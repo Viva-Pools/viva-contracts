@@ -4,6 +4,8 @@
 pragma soliditypp ^0.4.3;
 import "./SafeMathBasic.solpp";
 import "./Owned.solpp";
+import "./SBPVoter.solpp";
+
 
 /// @title StakingPools staking contract for VivaFi.org
 /// @author (a) Wesley W. Erickson (wes@vite.org)
@@ -52,7 +54,7 @@ import "./Owned.solpp";
 /// @dev   token because no such token exists, you cant earn rewards). Deploy carefully.
 /// @dev 
 /// @dev --------------------------------------------------------------------------------------------------------------------
-contract StakingPools is Owned {
+contract StakingPools is Owned, SBPVoter {
 
     // LIBRARIES
 
