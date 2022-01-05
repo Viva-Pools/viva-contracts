@@ -119,9 +119,6 @@ contract StakingPools is Owned, SBPVoter {
     mapping(uint => PoolInfo) public pools;
 
     // FUNCTIONS
-
-    constructor() Owned() public {
-    }
     
     /// @notice Updates rewardPerToken based on the current block height.
     function _updatePool(uint PoolId) private {
@@ -252,7 +249,7 @@ contract StakingPools is Owned, SBPVoter {
         PoolInfo storage pool = pools[PoolId];
         require(block.number < pool.endBlock); // can't fund an ended pool
         require(msg.tokenid == pool.rewardTokenId); // wrong tokenId deposited
-        require(msg.amount > 1e10); // must send tokens to deposit        
+        require(msg.amount > 1e10); // must send tokens to deposit, prevent issues with small token amounts       
         /// @dev endBlockIncrease has the potential to round down here allowing for some dust.
         uint endBlockIncrease = msg.amount.div(pool.rewardPerPeriod);
         require(endBlockIncrease > 0); // not enough tokens added to increase pool duration
