@@ -175,8 +175,8 @@ contract StakingPools is Owned {
         // update balances & recompute rewardDebt
         user.stakingBalance = user.stakingBalance.add(msg.amount);
         pool.totalStakingBalance = pool.totalStakingBalance.add(msg.amount);
-        /// @dev ATTENTION: rewardDebt has possibility to round down here, most dangerous line of code?
-        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36);
+        /// @dev add(1) present to prevent rounding down, causes slight accumulation of dust
+        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36).add(1);
 
         emit Deposit(msg.sender, PoolId, msg.amount);
     }
@@ -205,8 +205,8 @@ contract StakingPools is Owned {
         // update balances & recompute rewardDebt
         user.stakingBalance = user.stakingBalance.sub(amount);
         pool.totalStakingBalance = pool.totalStakingBalance.sub(amount);
-        /// @dev ATTENTION: rewardDebt has possibility to round down here, most dangerous line of code?
-        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36);
+        /// @dev add(1) present to prevent rounding down, causes slight accumulation of dust
+        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36).add(1);
         
         // send withdrawn funds
         msg.sender.transfer(pool.stakingTokenId, amount);
