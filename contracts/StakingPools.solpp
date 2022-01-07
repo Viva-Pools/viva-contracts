@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Viva Contracts v0.1.0
+// Viva Contracts v0.2.0
 
 pragma soliditypp ^0.4.3;
 import "./SafeMathBasic.solpp";
@@ -114,7 +114,7 @@ contract StakingPools is Owned, SBPVoter {
     event Claim(address indexed addr, uint indexed pid, uint amount);
 
     // GLOBALS
-    
+
     uint poolCount;
     mapping(uint => PoolInfo) public pools;
     mapping(tokenId => uint) votingRewardBalances; 
