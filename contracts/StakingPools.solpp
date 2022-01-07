@@ -117,6 +117,7 @@ contract StakingPools is Owned, SBPVoter {
     
     uint poolCount;
     mapping(uint => PoolInfo) public pools;
+    mapping(tokenId => uint) votingRewardBalances; 
 
     // FUNCTIONS
     
@@ -273,6 +274,21 @@ contract StakingPools is Owned, SBPVoter {
         pool.currentRewardBalance = 0;
     }
 
+    /// @notice Withdraw voting rewards by tokenid or other tokens directly sent to contract.
+    onMessage withdrawVotingReward(tokenId token){
+        require(msg.sender == owner);
+        require(votingRewardBalances[token] > 0);
+        /// @dev caution: following order is fine for solpp due to async but allows reentrancy attack in sol.
+        msg.sender.transfer(token, votingRewardBalances[token]);
+        votingRewardBalances[token] = 0;
+    }
+
+    /// @notice Fallback function accepts all tokens sent directly to the contract as voting rewards.
+    onMessage() payable {
+        require(msg.amount > 0);
+        votingRewardBalances[msg.tokenid] = votingRewardBalances[msg.tokenid].add(msg.amount);        
+    }
+
     getter getPoolCount() returns (uint pool_count) {
         return poolCount;
     }
@@ -344,6 +360,10 @@ contract StakingPools is Owned, SBPVoter {
             _packedIntegers[i*8+7] = pool.paidOut;
         }
         return (_stakingTokenIds, _rewardTokenIds, _packedIntegers);
+    }
+
+    getter getVotingReward(tokenId token) returns (uint amount) {
+        return votingRewardBalances[token];
     }
 
 }
