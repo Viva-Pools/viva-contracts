@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Viva Contracts v0.2.0
+// Viva Contracts v0.3.0
 
 pragma soliditypp ^0.4.3;
 import "./SafeMathBasic.solpp";
@@ -175,8 +175,8 @@ contract StakingPools is Owned, SBPVoter {
         // update balances & recompute rewardDebt
         user.stakingBalance = user.stakingBalance.add(msg.amount);
         pool.totalStakingBalance = pool.totalStakingBalance.add(msg.amount);
-        /// @dev add(1) present to prevent rounding down, causes slight accumulation of dust
-        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36).add(1);
+        /// @dev warning: rewardDebt has potential to round down, dangerous line of code.
+        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36);
 
         emit Deposit(msg.sender, PoolId, msg.amount);
     }
@@ -205,8 +205,8 @@ contract StakingPools is Owned, SBPVoter {
         // update balances & recompute rewardDebt
         user.stakingBalance = user.stakingBalance.sub(amount);
         pool.totalStakingBalance = pool.totalStakingBalance.sub(amount);
-        /// @dev add(1) present to prevent rounding down, causes slight accumulation of dust
-        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36).add(1);
+        /// @dev warning: rewardDebt has potential to round down, dangerous line of code.
+        user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36);
         
         // send withdrawn funds
         msg.sender.transfer(pool.stakingTokenId, amount);
