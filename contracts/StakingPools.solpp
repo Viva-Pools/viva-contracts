@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// Viva Contracts v0.3.0
+// Viva Contracts v0.4.0
 
 pragma soliditypp ^0.4.3;
 import "./SafeMathBasic.solpp";
