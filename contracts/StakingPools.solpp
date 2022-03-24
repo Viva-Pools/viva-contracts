@@ -248,8 +248,6 @@ contract StakingPools is Owned, SBPVoter {
         require(msg.sender == owner); // must be owner
         require(startBlock < endBlock); // start time must be before end time
         require(block.number < startBlock); // start time cannot be in the past
-        require(msg.amount < 1e35);  // prevent potential issues with large supply tokens
-        require(msg.amount > 1e10);   // prevent potential issues with small supply tokens
         emit PoolCreated(poolCount); // emit PoolId of new pool.
         PoolInfo storage pool = pools[poolCount++];
         pool.stakingTokenId = stakingTokenId;
@@ -275,13 +273,10 @@ contract StakingPools is Owned, SBPVoter {
         PoolInfo storage pool = pools[PoolId];
         require(block.number < pool.endBlock); // can't fund an ended pool
         require(msg.tokenid == pool.rewardTokenId); // wrong tokenId deposited
-        require(msg.amount > 1e10); // must send tokens to deposit, prevent issues with small token amounts       
         /// @dev endBlockIncrease has the potential to round down here allowing for some dust.
         uint endBlockIncrease = msg.amount.div(pool.rewardPerPeriod);
         require(endBlockIncrease > 0); // not enough tokens added to increase pool duration
         pool.totalRewardBalance = pool.totalRewardBalance.add(msg.amount);
-        /// @dev Prevent potential issues with large supply tokens.
-        require(pool.totalRewardBalance < 1e35); // too many tokens added
         pool.currentRewardBalance = pool.currentRewardBalance.add(msg.amount);
         pool.endBlock += endBlockIncrease;
     }
