@@ -92,6 +92,7 @@ contract StakingPools is Owned, SBPVoter {
     /// @member endBlock end block for the pool
     /// @member lockTime minimum time required to wait before withdraws
     /// @member minimumDeposit force deposits to be larger than this
+    /// @member maximumTotalStakingBalance if >0 does not allow the total of all deposits to be greater than this
     /// @member latestRewardBlock last block that the reward rate was updated
     /// @member rewardPerPeriod amount of tokens distributed per period
     /// @member rewardPerToken cumulative amount of tokens distributed per total number of tokens staked (times 1e36 for fixed point calculation)
@@ -108,6 +109,7 @@ contract StakingPools is Owned, SBPVoter {
         uint endBlock;
         uint lockTime;
         uint minimumDeposit;
+        uint maximumTotalStakingBalance;
         uint latestRewardBlock;
         uint rewardPerPeriod;
         uint rewardPerToken;
@@ -167,6 +169,7 @@ contract StakingPools is Owned, SBPVoter {
         require(msg.tokenid == pool.stakingTokenId); // token sent does not match staking pool
         require(block.number <= pool.endBlock);      // prevent deposit if pool closed
         require(msg.amount > pool.minimumDeposit);    // prevent depositing less than minimum
+        require(pool.maximumTotalStakingBalance == 0 || pool.totalStakingBalance.add(msg.amount) <= pool.maximumTotalStakingBalance); // 
 
         // dispense rewards
         if (user.stakingBalance > 0) {
@@ -241,6 +244,7 @@ contract StakingPools is Owned, SBPVoter {
         uint endBlock,
         uint lockTime,
         uint minimumDeposit,
+        uint maximumTotalStakingBalance,
         tokenId stakingTokenId
     )
         payable
@@ -259,6 +263,7 @@ contract StakingPools is Owned, SBPVoter {
         pool.endBlock = endBlock;
         pool.lockTime = lockTime;
         pool.minimumDeposit = minimumDeposit;
+        pool.maximumTotalStakingBalance = maximumTotalStakingBalance;
         pool.latestRewardBlock = startBlock;
         /// @dev rewardPerPeriod has the potential to round down here potentially allowing for some dust.
         pool.rewardPerPeriod = msg.amount.div(endBlock.sub(startBlock));
