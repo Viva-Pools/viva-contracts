@@ -72,9 +72,11 @@ contract StakingPools is Owned, SBPVoter {
     /// @notice Container for per-pool user information.
     /// @member stakingBalance current user deposit of staking token.
     /// @member rewardDebt value used for reward calculation
+    /// @member lastInteractionTime last deposit/withdraw time, used to prevent rapid withdraws/claims
     struct UserInfo {
         uint stakingBalance;
         uint rewardDebt;
+        uint lastInteractionTime;
     }
 
     /// @notice Container for per-pool settings and state.
@@ -86,6 +88,7 @@ contract StakingPools is Owned, SBPVoter {
     /// @member currentRewardBalance remaining rewards in pool that have not yet been dispensed (decreases w/ reward claims).
     /// @member startBlock start block for the pool
     /// @member endBlock end block for the pool
+    /// @member lockTime minimum time required to wait before withdraws
     /// @member latestRewardBlock last block that the reward rate was updated
     /// @member rewardPerPeriod amount of tokens distributed per period
     /// @member rewardPerToken cumulative amount of tokens distributed per total number of tokens staked (times 1e36 for fixed point calculation)
@@ -100,6 +103,7 @@ contract StakingPools is Owned, SBPVoter {
         uint currentRewardBalance;
         uint startBlock;
         uint endBlock;
+        uint lockTime;
         uint latestRewardBlock;
         uint rewardPerPeriod;
         uint rewardPerToken;
@@ -178,6 +182,9 @@ contract StakingPools is Owned, SBPVoter {
         /// @dev warning: rewardDebt has potential to round down, dangerous line of code.
         user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36);
 
+        // set last deposit time
+        user.lastInteractionTime = block.number;
+
         emit Deposit(msg.sender, PoolId, msg.amount);
     }
 
@@ -188,6 +195,11 @@ contract StakingPools is Owned, SBPVoter {
         _updatePool(PoolId);
         require(user.stakingBalance > 0); // must have funds staked to withdraw
         require(user.stakingBalance >= amount); // can't withdraw more than deposit
+        if( block.number > pool.endBlock ){
+            require(block.number > 100 + user.lastInteractionTime ); // only 100 second delay after pool closes
+        } else {
+            require(block.number > pool.lockTime + user.lastInteractionTime); // can't withdraw/claim
+        }
         
         // dispense rewards
         /// @dev no 'if' statement needed here due to require(user.stakingBalance > 0);
@@ -211,6 +223,9 @@ contract StakingPools is Owned, SBPVoter {
         // send withdrawn funds
         msg.sender.transfer(pool.stakingTokenId, amount);
         
+        // set last deposit time
+        user.lastInteractionTime = block.number;
+        
         emit Withdraw(msg.sender, PoolId, amount);        
     }
 
@@ -218,6 +233,7 @@ contract StakingPools is Owned, SBPVoter {
     onMessage createStakingPool(
         uint startBlock,
         uint endBlock,
+        uint lockTime,
         tokenId stakingTokenId
     )
         payable
@@ -236,6 +252,7 @@ contract StakingPools is Owned, SBPVoter {
         pool.currentRewardBalance = msg.amount;
         pool.startBlock = startBlock;
         pool.endBlock = endBlock;
+        pool.lockTime = lockTime;
         pool.latestRewardBlock = startBlock;
         /// @dev rewardPerPeriod has the potential to round down here potentially allowing for some dust.
         pool.rewardPerPeriod = msg.amount.div(endBlock.sub(startBlock));
