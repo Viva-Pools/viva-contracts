@@ -117,6 +117,7 @@ contract StakingPools is Owned, SBPVoter {
     event PoolCreated(uint pid);
     event Deposit(address indexed addr, uint indexed pid, uint amount);
     event Withdraw(address indexed addr, uint indexed pid, uint amount);
+    event EmergencyWithdraw(address indexed addr, uint indexed pid, uint amount);
     event Claim(address indexed addr, uint indexed pid, uint amount);
 
     // GLOBALS
@@ -303,6 +304,30 @@ contract StakingPools is Owned, SBPVoter {
         /// @dev caution: following order is fine for solpp due to async but allows reentrancy attack in sol.
         msg.sender.transfer(token, votingRewardBalances[token]);
         votingRewardBalances[token] = 0;
+    }
+
+    /// @notice Withdraw deposits and forfeit rewards. Only use in emergencies.
+    onMessage emergencyWithdraw(uint PoolId){
+        PoolInfo storage pool = pools[PoolId];
+        UserInfo storage user = pool.userInfo[msg.sender];
+        require(user.stakingBalance > 0); // must have funds staked to withdraw
+        if( block.number > pool.endBlock ){
+            require(block.number > 100 + user.lastInteractionTime ); // only 100 second delay after pool closes
+        } else {
+            require(block.number > pool.lockTime + user.lastInteractionTime); // can't withdraw/claim
+        }
+        
+        // withdraw all funds
+        msg.sender.transfer(pool.stakingTokenId, user.stakingBalance);
+
+        emit EmergencyWithdraw(msg.sender, PoolId, user.stakingBalance);    
+
+        // reduce totalStakingBalance
+        pool.totalStakingBalance = pool.totalStakingBalance.sub(user.stakingBalance);
+
+        // set balances and debt to zero
+        user.stakingBalance = 0;
+        user.rewardDebt = 0;
     }
 
     /// @notice Fallback function accepts all tokens sent directly to the contract as voting rewards.
