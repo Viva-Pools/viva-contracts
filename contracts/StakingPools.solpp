@@ -44,6 +44,8 @@ import "./SBPVoter.solpp";
 /// @dev - DUST: All rounding / truncation is designed such that IF there is rounding, it ROUNDS DOWN such that a small amount
 /// @dev   of dust will be left in the contract. This prevents the contract from running out of funds due to rounding, as well
 /// @dev   as preventing potential attacks. Any dust can be redeemed by withdrawDust() if desired after the pool is closed.
+/// @dev - minimumDeposit, lockTime, lastInteractionTime work in conjunction to limit rounding errors from accumulating dust and 
+/// @dev   reducing users income, while allowing the operator more freedom with deploying coins that have small supply.
 /// @dev 
 /// @dev Warning: improper contract use can lock reward tokens for adminDelay seconds.
 /// @dev - If there is a period of time where there is no StakingBalance, some reward tokens will be
