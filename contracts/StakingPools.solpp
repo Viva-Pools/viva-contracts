@@ -383,6 +383,21 @@ contract StakingPools is Owned, SBPVoter {
         );
     }
 
+    /// @dev getters for additional variables added for v0.4 pools
+    getter getExtraPoolInfo(uint PoolId)
+        returns (
+            uint minimumDeposit,
+            uint maximumTotalStakingBalance
+        )
+    {
+        PoolInfo storage pool = pools[PoolId];
+        return (
+            pool.minimumDeposit,
+            pool.maximumTotalStakingBalance
+        );
+    }
+
+
     /// @dev Not user friendly return structure due to stack depth and abi limitations.
     /// @dev Possible performance tweaks by adjusting how packedIntegers is traversed.
     getter getAllPoolInfo() returns (
@@ -410,6 +425,22 @@ contract StakingPools is Owned, SBPVoter {
         }
         return (_stakingTokenIds, _rewardTokenIds, _packedIntegers);
     }
+
+    /// @dev getAll getter for additional variables added for v0.4 pools
+    getter getAllExtraPoolInfo() returns (
+        uint[] memory packedIntegers
+    )
+    {
+        uint[] memory _packedIntegers = new uint[](poolCount*2);
+
+        for (uint i = 0; i < poolCount; i++) {
+            PoolInfo storage pool = pools[i];
+            _packedIntegers[i*8+0] = pool.minimumDeposit;
+            _packedIntegers[i*8+1] = pool.maximumTotalStakingBalance;
+        }
+        return _packedIntegers;
+    }
+
 
     getter getVotingReward(tokenId token) returns (uint amount) {
         return votingRewardBalances[token];
