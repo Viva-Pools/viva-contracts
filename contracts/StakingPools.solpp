@@ -168,7 +168,7 @@ contract StakingPools is Owned, SBPVoter {
         _updatePool(PoolId);
         require(msg.tokenid == pool.stakingTokenId); // token sent does not match staking pool
         require(block.number <= pool.endBlock);      // prevent deposit if pool closed
-        require(msg.amount > pool.minimumDeposit);    // prevent depositing less than minimum
+        require(msg.amount >= pool.minimumDeposit);    // prevent depositing less than minimum
         require(pool.maximumTotalStakingBalance == 0 || pool.totalStakingBalance.add(msg.amount) <= pool.maximumTotalStakingBalance); // 
 
         // dispense rewards
