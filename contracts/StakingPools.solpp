@@ -44,7 +44,7 @@ import "./SBPVoter.solpp";
 /// @dev - DUST: All rounding / truncation is designed such that IF there is rounding, it ROUNDS DOWN such that a small amount
 /// @dev   of dust will be left in the contract. This prevents the contract from running out of funds due to rounding, as well
 /// @dev   as preventing potential attacks. Any dust can be redeemed by withdrawDust() if desired after the pool is closed.
-/// @dev - minimumDeposit, lockTime, lastInteractionTime work in conjunction to limit rounding errors from accumulating dust and 
+/// @dev - minimumDeposit, lockTime, lastInteractionBlock work in conjunction to limit rounding errors from accumulating dust and 
 /// @dev   reducing users income, while allowing the operator more freedom with deploying coins that have small supply.
 /// @dev 
 /// @dev Warning: improper contract use can lock reward tokens for adminDelay seconds.
@@ -74,11 +74,11 @@ contract StakingPools is Owned, SBPVoter {
     /// @notice Container for per-pool user information.
     /// @member stakingBalance current user deposit of staking token.
     /// @member rewardDebt value used for reward calculation
-    /// @member lastInteractionTime last deposit/withdraw time, used to prevent rapid withdraws/claims
+    /// @member lastInteractionBlock last deposit/withdraw time, used to prevent rapid withdraws/claims
     struct UserInfo {
         uint stakingBalance;
         uint rewardDebt;
-        uint lastInteractionTime;
+        uint lastInteractionBlock;
     }
 
     /// @notice Container for per-pool settings and state.
@@ -192,7 +192,7 @@ contract StakingPools is Owned, SBPVoter {
         user.rewardDebt = user.stakingBalance.mul(pool.rewardPerToken).div(1e36);
 
         // set last deposit time
-        user.lastInteractionTime = block.number;
+        user.lastInteractionBlock = block.number;
 
         emit Deposit(msg.sender, PoolId, msg.amount);
     }
@@ -205,9 +205,9 @@ contract StakingPools is Owned, SBPVoter {
         require(user.stakingBalance > 0); // must have funds staked to withdraw
         require(user.stakingBalance >= amount); // can't withdraw more than deposit
         if( block.number > pool.endBlock ){
-            require(block.number > 100 + user.lastInteractionTime ); // only 100 second delay after pool closes
+            require(block.number > 100 + user.lastInteractionBlock ); // only 100 second delay after pool closes
         } else {
-            require(block.number > pool.lockTime + user.lastInteractionTime); // can't withdraw/claim
+            require(block.number > pool.lockTime + user.lastInteractionBlock); // can't withdraw/claim
         }
         
         // dispense rewards
@@ -233,7 +233,7 @@ contract StakingPools is Owned, SBPVoter {
         msg.sender.transfer(pool.stakingTokenId, amount);
         
         // set last deposit time
-        user.lastInteractionTime = block.number;
+        user.lastInteractionBlock = block.number;
         
         emit Withdraw(msg.sender, PoolId, amount);        
     }
@@ -314,9 +314,9 @@ contract StakingPools is Owned, SBPVoter {
         UserInfo storage user = pool.userInfo[msg.sender];
         require(user.stakingBalance > 0); // must have funds staked to withdraw
         if( block.number > pool.endBlock ){
-            require(block.number > 100 + user.lastInteractionTime ); // only 100 second delay after pool closes
+            require(block.number > 100 + user.lastInteractionBlock ); // only 100 second delay after pool closes
         } else {
-            require(block.number > pool.lockTime + user.lastInteractionTime); // can't withdraw/claim
+            require(block.number > pool.lockTime + user.lastInteractionBlock); // can't withdraw/claim
         }
         
         // withdraw all funds
