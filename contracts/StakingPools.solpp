@@ -387,13 +387,15 @@ contract StakingPools is Owned, SBPVoter {
     getter getExtraPoolInfo(uint PoolId)
         returns (
             uint minimumDeposit,
-            uint maximumTotalStakingBalance
+            uint maximumTotalStakingBalance,
+            uint lockTime
         )
     {
         PoolInfo storage pool = pools[PoolId];
         return (
             pool.minimumDeposit,
-            pool.maximumTotalStakingBalance
+            pool.maximumTotalStakingBalance,
+            pool.lockTime
         );
     }
 
@@ -431,12 +433,13 @@ contract StakingPools is Owned, SBPVoter {
         uint[] memory packedIntegers
     )
     {
-        uint[] memory _packedIntegers = new uint[](poolCount*2);
+        uint[] memory _packedIntegers = new uint[](poolCount*3);
 
         for (uint i = 0; i < poolCount; i++) {
             PoolInfo storage pool = pools[i];
-            _packedIntegers[i*8+0] = pool.minimumDeposit;
-            _packedIntegers[i*8+1] = pool.maximumTotalStakingBalance;
+            _packedIntegers[i*3+0] = pool.minimumDeposit;
+            _packedIntegers[i*3+1] = pool.maximumTotalStakingBalance;
+            _packedIntegers[i*3+2] = pool.lockTime;
         }
         return _packedIntegers;
     }
