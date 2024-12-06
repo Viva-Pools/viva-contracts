@@ -1,0 +1,34 @@
+// SPDX-License-Identifier: MIT
+// Viva Contracts v0.1.1
+
+pragma soliditypp ^0.8.0;
+
+/// @title Owned 
+/// @author Moe
+/// @notice Updated to 0.8.0, added modifier
+/// @author Wesley W. Erickson
+/// @notice Adds basic owner functionality to a contract.
+contract Owned {
+    address public owner;
+
+    /// @notice Constructor sets owner to deployment address.
+    constructor() {
+        owner = msg.sender;
+    }
+    
+    /// @notice Change owner of contract; only usable by current owner.
+    function setOwner(address newOwner) external onlyOwner {
+        require(msg.sender == owner);
+        owner = newOwner;
+    }
+    
+    /// @notice Getter for address of current owner of contract.
+    function getOwner() view public returns(address _owner){
+        return Owned.owner;
+    }
+
+    modifier onlyOwner(){
+        require(owner == msg.sender);
+        _;
+    }
+}

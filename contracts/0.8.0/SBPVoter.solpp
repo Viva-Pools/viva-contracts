@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: MIT
+// Viva Contracts v0.1.1
+
+pragma soliditypp ^0.8.0;
+
+import "./Owned.solpp";
+import "./Consensus.solpp";
+
+contract SBPVoter is Owned {
+    ConsensusContract consensusContract = ConsensusContract("vite_0000000000000000000000000000000000000004d28108e76b");
+    string lastVote = "";
+
+    function cancelVote() external onlyOwner {
+        lastVote = "";
+        consensusContract.CancelSBPVoting();
+    }
+
+    function sendVote(string calldata sbpName) external onlyOwner {
+        lastVote = sbpName;
+        consensusContract.VoteForSBP(sbpName);
+    }
+
+    function getVote() view public returns(string memory last_vote) {
+        return lastVote;
+    }
+    
+}
